@@ -1,0 +1,148 @@
+{
+  "name": "pend",
+  "displayName": "pend",
+  "description": "reduce cognitive context switching while coding",
+  "publisher": "lastobelus",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pend.newFunction",
+        "title": "Define new function",
+        "category": "Pending",
+        "icon": "$(pinned)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pend.newFunction",
+        "key": "alt+m alt+n",
+        "mac": "ctrl+m ctrl+n",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "pend.newFunction",
+        "key": "alt+m alt+a",
+        "mac": "ctrl+m ctrl+a",
+        "args": "afterFunction",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "pend.newFunction",
+        "key": "alt+m alt+b",
+        "mac": "ctrl+m ctrl+b",
+        "args": "beforeFunction",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "pend.newFunction",
+        "key": "alt+m alt+t",
+        "mac": "ctrl+m ctrl+t",
+        "args": "beginningOfModule",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "pend.newFunction",
+        "key": "alt+m alt+e",
+        "mac": "ctrl+m ctrl+e",
+        "args": "endOfModule",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "pend.newFunction",
+          "when": "editorLangId == elixir"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "pend.newFunction",
+          "group": "1_modification",
+          "when": "editorLangId == elixir"
+        }
+      ]
+    },
+    "configuration":[
+      {
+        "title": "Pend",
+        "properties": {
+          "pend.newFunction.defaultLocation": {
+            "type": "string",
+            "scope": "language-overridable",
+            "enum": [
+              "beginningOfModule",
+              "endOfModule",
+              "beforeFunction",
+              "afterFunction"
+            ],
+            "enumItemLabels": [
+              "Beginning of module",
+              "End of module",
+              "Before function",
+              "After function"
+            ],
+            "enumDescriptions": [
+              "Create new pending function at the beginning of the current module.",
+              "Create new pending function at the end of the current module.",
+              "Create new pending function before the current function (or cursor position if not inside a function).",
+              "Create new pending function after the current function (or cursor position if not inside a function)."
+
+            ],
+            "default": "afterFunction",
+            "description": "Where in relation to the current module/function to create new pending functions."
+          },
+          "pend.indent": {
+            "type": "string",
+            "scope": "language-overridable",
+            "enum": [
+              "  ",
+              "    ",
+              "\t"
+            ],
+            "enumItemLabels": [
+              "2 spaces",
+              "4 spaces",
+              "tab"
+            ],
+            "enumDescriptions": [
+              "Use 2 spaces for indentation.",
+              "Use 4 spaces for indentation.",
+              "Use tab for indentation."
+            ],
+            "default": "  ",
+            "description": "Indentation style to use for new pending code."
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
