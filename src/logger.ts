@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as util from 'util';
 import { OutputChannel } from "vscode";
+import symbolKindNames from './symbol-kind-names';
 
 export class Logger {
     private outputChannel?: OutputChannel;
@@ -41,16 +42,49 @@ export class Logger {
         const prefix = label ? `${label}: ` : '';
         this.append(prefix + this.inspectRange(range));
     }
+    
+    public inspectPosition(position?: vscode.Position) {
+        if (!position) {
+            return `--`;
+        }
+        return `(${position.line}:${position.character})`;
+    }
+
+    public logPosition(range?: vscode.Position, label: string | null = null) {
+        const prefix = label ? `${label}: ` : '';
+        this.append(prefix + this.inspectPosition(range));
+    }
 
     public inspectSymbol(symbol?: vscode.DocumentSymbol) {
         if (!symbol) {
             return `--`;
         }
-        return `${symbol.kind}: ${symbol.name} ${this.inspectRange(symbol.range)}`;
+        const kind = symbolKindNames[symbol.kind] || "<unknown>";
+        return `${kind.padStart(22, " ")}: ${symbol.name} r:${this.inspectRange(symbol.range)}`;
     }
 
     public logSymbol(symbol?: vscode.DocumentSymbol, label: string | null = null) {
         const prefix = label ? `${label}: ` : '';
         this.append(`${prefix}${this.inspectSymbol(symbol)}`);
     }
+
+    public logSymbols(symbols: vscode.DocumentSymbol[], label: string | null = null) {
+        const prefix = label ? `${label}: ` : '';
+        symbols.forEach(symbol => {
+            this.logSymbol(symbol);
+            this.logSymbols(symbol.children);
+        });
+    }
+    
+    public inspectSelection(document: vscode.TextDocument, selection?: vscode.Selection) {
+        if (!selection) {
+            return `--`;
+        }
+        return `(${selection.start.line}:${selection.start.character}-->${selection.end.line}:${selection.end.character}) active: ${this.inspectPosition(selection.active)} anchor: ${ this.inspectPosition(selection.anchor) }`;
+    }
+
+    public logSelection(document: vscode.TextDocument, selection?: vscode.Selection, label: string | null = null) {
+        const prefix = label ? `${label}: ` : '';
+        this.append(`${prefix}${this.inspectSelection(document, selection)}`);
+    }   
 }
