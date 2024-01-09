@@ -8,8 +8,10 @@ import symbolKindNames from './symbol-kind-names';
 import * as pend from './new-function';
 import { SymbolLocation } from './symbol-location';
 import * as config from './config';
+import { FunctionCallSelector } from './function-call-selector';
+import { DocumentSymbols } from './document-symbols';
 
-const log: Logger = new Logger('Pend', false);
+const log: Logger = new Logger('Pend', true);
 
 
 
@@ -30,7 +32,36 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('pend.inspect', async (args: any) => {
+		let editor = vscode.window.activeTextEditor;
+
+		const debugSelection = false;
+		const logSymbols = true;
+
+		log.append("New Ok...");
+		if (editor) {
+			if(debugSelection) {
+				let selector = new FunctionCallSelector(editor);
+				log.append(`wordSeparators: ${selector.wordSeparators}`);
+				log.append("---------------------------------------------");
+				selector.leftChar(editor.selection, true);
+				log.append("---------------------------------------------");
+				selector.rightChar(editor.selection, true);
+				log.append("---------------------------------------------");
+				await selector.selectWord(true);
+			}
+
+			if (logSymbols){
+				const documentSymbols = new DocumentSymbols(editor.document);
+				log.logSymbols(await documentSymbols.getSymbols());
+			}
+		}
+	});
+
+	context.subscriptions.push(disposable);
 }
+
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
