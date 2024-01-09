@@ -12,10 +12,12 @@ const log: Logger = new Logger('Pend', true);
 export class DocumentSymbols {
     document: vscode.TextDocument;
     symbolsCache: vscode.DocumentSymbol[] | null;
+    uniqueNamesCache: string[] | null;
 
     constructor(document: vscode.TextDocument) {
         this.document = document;
         this.symbolsCache = null;
+        this.uniqueNamesCache = null;
     }
 
     public async getSymbols(): Promise<vscode.DocumentSymbol[]> {
@@ -32,7 +34,42 @@ export class DocumentSymbols {
         return symbols;
     }
 
-    public async symbolContainingRange(range: vscode.Range, kind?: vscode.SymbolKind): Promise<vscode.DocumentSymbol | undefined > {
+    public async uniqueNames(symbols?:vscode.DocumentSymbol[], cache?: string[]): Promise<string[]> {
+        if (!this.uniqueNamesCache) {
+            this.uniqueNamesCache = this.cacheUniqueNames(await this.getSymbols(), []);
+        }
+        return this.uniqueNamesCache;
+    }
+
+    private cacheUniqueNames(symbols: vscode.DocumentSymbol[], names: string[] = []): string[] {
+        for (const symbol of symbols) {
+            const name = this.validSymbolForUniqueCheck(symbol);
+
+            if (name) {
+                names.push(name);
+            }
+            if (symbol.children) {
+                this.cacheUniqueNames(symbol.children, names);
+            }
+        }
+        return names;
+    }
+
+    private validSymbolForUniqueCheck(symbol: vscode.DocumentSymbol): string | null {
+        const kinds = config.getSymbolKindsCheckedForUniqueness(this.document.uri);
+        if (kinds.indexOf(symbol.kind) === -1) {
+            return null;
+        }
+        const nameRegex = config.getSymbolNameRegex(this.document.uri);
+        const matches = symbol.name.match(nameRegex);
+        if (matches && matches.length > 0) {
+            return matches[1];
+        } else {
+            return null;
+        }
+    }
+
+    public async symbolContainingRange(range: vscode.Range, kind?: vscode.SymbolKind): Promise<vscode.DocumentSymbol | undefined> {
         const symbols = await this.getSymbols();
         return this._symbolContainingRange(symbols, range, kind);
     }
@@ -83,7 +120,7 @@ export class DocumentSymbols {
         return this._inspectSymbols(symbols, 0);
     }
 
-    private async _inspectSymbols(symbols: vscode.DocumentSymbol[], depth: number): Promise<string> {      
+    private async _inspectSymbols(symbols: vscode.DocumentSymbol[], depth: number): Promise<string> {
         let result = '';
         for (const symbol of symbols) {
             const indent = new Array(depth + 1).join('  ');
@@ -114,7 +151,7 @@ export class DocumentSymbols {
     public firstLineInRange(range: vscode.Range): string {
         return this.document.lineAt(range.start.line).text;
     }
-    
+
     public indentOfSymbol(symbol: vscode.DocumentSymbol): string {
         const firstLine = this.firstLineInRange(symbol.range);
         return firstLine.match(/^(\s*)/)?.[0] ?? '';
@@ -164,15 +201,18 @@ export class DocumentSymbols {
                 suffix = '\n';
                 break;
         }
-    
+
         return {
             position: position,
             code: prefix + lines.map(line => indent + line).join('\n') + suffix
         };
     }
-    
-        
-    
+
+    public async nameExists(name:string): Promise<boolean> {
+        const uniqueNames = await this.uniqueNames();
+        return uniqueNames.some(uniqueName => uniqueName === name);
+    }
+
 }
 
 
