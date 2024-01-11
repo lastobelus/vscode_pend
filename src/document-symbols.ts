@@ -12,7 +12,7 @@ const log: Logger = new Logger('Pend', true);
 export class DocumentSymbols {
     document: vscode.TextDocument;
     symbolsCache: vscode.DocumentSymbol[] | null;
-    uniqueNamesCache: string[] | null;
+    uniqueNamesCache: Set<string> | null;
 
     constructor(document: vscode.TextDocument) {
         this.document = document;
@@ -34,9 +34,11 @@ export class DocumentSymbols {
         return symbols;
     }
 
-    public async uniqueNames(symbols?:vscode.DocumentSymbol[], cache?: string[]): Promise<string[]> {
+    public async uniqueNames(symbols?:vscode.DocumentSymbol[], cache?: string[]): Promise<Set<string>> {
         if (!this.uniqueNamesCache) {
-            this.uniqueNamesCache = this.cacheUniqueNames(await this.getSymbols(), []);
+            const symbols = await this.getSymbols();
+            const uniqueNames = this.cacheUniqueNames(symbols);
+            this.uniqueNamesCache = new Set(uniqueNames);
         }
         return this.uniqueNamesCache;
     }
@@ -56,11 +58,11 @@ export class DocumentSymbols {
     }
 
     private validSymbolForUniqueCheck(symbol: vscode.DocumentSymbol): string | null {
-        const kinds = config.getSymbolKindsCheckedForUniqueness(this.document.uri);
+        const kinds = config.getSymbolKindsCheckedForUniqueness(this.document);
+        const nameRegex = config.getSymbolNameRegex(this.document);
         if (kinds.indexOf(symbol.kind) === -1) {
             return null;
         }
-        const nameRegex = config.getSymbolNameRegex(this.document.uri);
         const matches = symbol.name.match(nameRegex);
         if (matches && matches.length > 0) {
             return matches[1];
@@ -162,7 +164,7 @@ export class DocumentSymbols {
     }
 
     public prepareCodeForInsertionAtSymbolLocation(symbol: vscode.DocumentSymbol, positionRange: vscode.Range, location: SymbolLocation, lines: string[]): { position: vscode.Position, code: string } {
-        const indent = this.indentOfSymbol(symbol) + config.getIndent(this.document.uri);
+        const indent = this.indentOfSymbol(symbol) + config.getIndent(this.document);
         let position: vscode.Position;
         let prefix = '';
         let suffix = '';
@@ -210,7 +212,7 @@ export class DocumentSymbols {
 
     public async nameExists(name:string): Promise<boolean> {
         const uniqueNames = await this.uniqueNames();
-        return uniqueNames.some(uniqueName => uniqueName === name);
+        return uniqueNames.has(name);
     }
 
 }

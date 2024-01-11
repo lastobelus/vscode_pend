@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('pend.newFunction', async (args: any) => {
 		let editor = vscode.window.activeTextEditor;
 		if (editor) {
-			let location = config.getNewFunctionDefaultLocation(editor.document.uri);
+			let location = config.getNewFunctionDefaultLocation(editor.document);
 			if (args) {
 				location = SymbolLocation.parse(args);
 			}
@@ -38,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const debugSelection = false;
 		const logSymbols = true;
+		const logUniqueNames = true;
 
 		log.append("New Ok...");
 		if (editor) {
@@ -55,6 +56,11 @@ export function activate(context: vscode.ExtensionContext) {
 			if (logSymbols){
 				const documentSymbols = new DocumentSymbols(editor.document);
 				log.logSymbols(await documentSymbols.getSymbols());
+			}
+			if (logUniqueNames) {
+				const documentSymbols = new DocumentSymbols(editor.document);
+				log.append("uniqueNames: ");
+				log.append(util.inspect(await documentSymbols.uniqueNames()));
 			}
 		}
 	});
