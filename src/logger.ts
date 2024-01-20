@@ -76,15 +76,15 @@ export class Logger {
         });
     }
     
-    public inspectSelection(document: vscode.TextDocument, selection?: vscode.Selection) {
+    public inspectSelection(selection?: vscode.Selection) {
         if (!selection) {
             return `--`;
         }
         return `(${selection.start.line}:${selection.start.character}-->${selection.end.line}:${selection.end.character}) active: ${this.inspectPosition(selection.active)} anchor: ${ this.inspectPosition(selection.anchor) }`;
     }
 
-    public logSelection(document: vscode.TextDocument, selection?: vscode.Selection, label: string | null = null) {
+    public logSelection(selection?: vscode.Selection, label: string | null = null) {
         const prefix = label ? `${label}: ` : '';
-        this.append(`${prefix}${this.inspectSelection(document, selection)}`);
+        this.append(`${prefix}${this.inspectSelection(selection)}`);
     }   
 }

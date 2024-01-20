@@ -2,6 +2,13 @@ import { defineConfig } from '@vscode/test-cli';
 
 export default defineConfig([
 	{
+		label: "infraTests",
+		files: 'out/test/example-parser.test.js',
+		mocha: {
+			timeout: 60000,
+		},
+	},
+	{
 		label: "unitTests",
 		files: 'out/test/*.test.js',
 		mocha: {

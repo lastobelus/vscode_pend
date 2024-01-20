@@ -1,0 +1,31 @@
+defmodule InnerModule do
+  def first_inner_function(arg) do
+    IO.puts("arg: #{inspect(arg)}")
+
+    # Example: cursor right of word with empty selection
+    new_function
+    # ----------^
+    # def new_function() do
+
+    # Example: cursor in word with empty selection
+    new_function
+    # ----^
+    # def new_function() do
+
+    # Example: cursor right of word with word selected
+    new_function
+    #----------]^
+    # def new_function() do
+
+    # Example: cursor right of word inside a function call
+    first_inner_function(new_function())
+    # -------------------------------^
+    # def new_function() do
+
+    # Example: signature with word selected with cursor left
+    first_inner_function(new_function())
+    # -------------------|----------]
+    # def new_function() do
+
+  end
+end

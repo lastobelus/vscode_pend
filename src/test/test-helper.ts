@@ -9,10 +9,14 @@ export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export async function edit(name: string): Promise<vscode.TextEditor> {
-    const uri = vscode.Uri.file(
+export function testUri(name: string): vscode.Uri {
+    return vscode.Uri.file(
         path.join(__dirname + "/../../src/test/" + name)
     );
+}
+
+export async function edit(name: string): Promise<vscode.TextEditor> {
+    const uri = testUri(name);
     const document = await vscode.workspace.openTextDocument(uri);
     const editor = await vscode.window.showTextDocument(document);
     return editor;
@@ -53,3 +57,24 @@ export async function waitForCommandToHaveResult(command: string, args: [any], i
         ) !== invalid;
     });
 }
+
+// export async function findExamples(path: string): Promise<string[]> {
+    // open example document
+    // split on `${comment} Example: `
+    // extract example.text
+    // extract example.result_filename
+    // find selection marker line
+    // find caret, char position is cursor position
+    //   if no caret, look for |, that is both cursor & end of selection, i.e.,for this:
+    //       word
+    //       #--|
+    //   word is selected and the cursor is between r and d
+    // while for 
+    //      word
+    //      #--]^
+    // word is selected and cursor is after the d
+    // find ], char position is selection end char
+    //    find [, char position is selection start char
+    //       if not found, selection start char is first non indent char of code line
+    // extract algorithm comment if present
+// }

@@ -1,9 +1,9 @@
+import * as testHelper from '../test-helper';
 import * as assert from 'assert';
 import * as util from 'util';
 
 import * as vscode from 'vscode';
 import { DocumentSymbols } from '../../document-symbols';
-import * as testHelper from '../test-helper';
 
 const elixirLSExtensionId = 'jakebecker.elixir-ls';
 
@@ -32,6 +32,7 @@ suite('Elixir Document Symbol Tests', async () => {
         const expect= chai.expect;
 
         await testHelper.whileEditingExample('sampleElixirWorkspace/lib/top_module.ex', async editor => {
+            console.log(`uri: ${editor.document.uri}`);
             await testHelper.waitForCommandToHaveResult(
                 "vscode.executeDocumentSymbolProvider", [editor.document.uri], undefined);
 

@@ -15,6 +15,16 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "mix",
+			"task": "Build",
+			"problemMatcher": [
+				"$mixCompileError",
+				"$mixCompileWarning"
+			],
+			"group": "build",
+			"label": "mix: Build"
 		}
 	]
 }
