@@ -13,6 +13,21 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "pend-sidebar": [
+        {
+          "id": "pend-sidebar",
+          "name": "Pend",
+          "type": "webview",
+          "icon": "images/pend-icon.svg",
+          "context": [
+            "workspace"
+          ],
+          "group": "navigation",
+          "priority": 100
+        }
+      ]
+    },
     "commands": [
       {
         "command": "pend.newFunction",
@@ -172,9 +187,10 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run package",
+    "compile": "node ./esbuild.js",
+    "package": "NODE_ENV=production node ./esbuild.js",
+    "watch": "node ./esbuild.js --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test"
@@ -184,13 +200,18 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.85.0",
+    "@types/vscode-webview": "^1.57.4",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8",
     "chai": "^5.0.0",
+    "esbuild": "^0.16.17",
     "eslint": "^8.56.0",
     "path": "^0.12.7",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.4.0"
   }
 }
