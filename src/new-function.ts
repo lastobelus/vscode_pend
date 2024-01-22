@@ -62,5 +62,4 @@ export async function insertNewFunction(editor: vscode.TextEditor, location: Sym
 
     const code = blankFunctionFromSelection(sel);
     await documentSymbols.indentAndInsertLinesInSymbol(containerSymbol, positionRange, location, blankFunctionFromSelection(sel + "_" + SymbolLocation.label(location)));
-
 }
