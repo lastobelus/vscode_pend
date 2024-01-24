@@ -10,6 +10,7 @@ import { SymbolLocation } from './symbol-location';
 import * as config from './config';
 import { FunctionCallSelector } from './function-call-selector';
 import { DocumentSymbols } from './document-symbols';
+import { PendSidebarProvider } from './providers/sidebar-provider';
 
 const log: Logger = new Logger('Pend', true);
 
@@ -20,7 +21,7 @@ const log: Logger = new Logger('Pend', true);
 export function activate(context: vscode.ExtensionContext) {
 	log.append('extension "pend" is now active!');
 
-	let disposable = vscode.commands.registerCommand('pend.newFunction', async (args: any) => {
+	const newFunctionDisposable = vscode.commands.registerCommand('pend.newFunction', async (args: any) => {
 		let editor = vscode.window.activeTextEditor;
 		if (editor) {
 			let location = config.getNewFunctionDefaultLocation(editor.document);
@@ -31,9 +32,9 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(newFunctionDisposable);
 
-	disposable = vscode.commands.registerCommand('pend.inspect', async (args: any) => {
+	const inspectDisposable = vscode.commands.registerCommand('pend.inspect', async (args: any) => {
 		let editor = vscode.window.activeTextEditor;
 
 		const debugSelection = false;
@@ -65,7 +66,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(inspectDisposable);
+
+	const sidebarProvider = new PendSidebarProvider(context.extensionUri)
+	const sidebarDisposable = vscode.window.registerWebviewViewProvider(PendSidebarProvider.viewType, sidebarProvider);
 }
 
 

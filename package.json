@@ -10,21 +10,25 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "views": {
-      "pend-sidebar": [
+    "viewsContainers": {
+      "activitybar": [
         {
-          "id": "pend-sidebar",
-          "name": "Pend",
+          "id": "pend",
+          "title": "Pend1",
+          "icon": "images/pend-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "pend": [
+        {
+          "id": "pend.sidebar",
+          "name": "Pend2",
           "type": "webview",
           "icon": "images/pend-icon.svg",
-          "context": [
-            "workspace"
-          ],
-          "group": "navigation",
-          "priority": 100
+          "contextualTitle": "Pend3"
         }
       ]
     },
