@@ -12,6 +12,7 @@ import { DocumentSymbols } from './document-symbols';
 import { PendSidebarProvider } from './providers/sidebar-provider';
 import { NewFunctionCommand } from './commands/new-function-command';
 import { PendPanel } from "./panels/pend-panel";
+import { GotoPendingFunctionCommand } from './commands/goto-pending-function-command';
 
 const log: Logger = new Logger('Pend', true);
 
@@ -41,6 +42,17 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(newFunctionDisposable);
+
+	const gotoPendingFunctionDisposable = vscode.commands.registerCommand('pend.gotoPendingFunction', async (args: any) => {
+		const editor = vscode.window.activeTextEditor;
+
+		if (editor) {
+			const gotoPendingFunction = new GotoPendingFunctionCommand(context);
+			await gotoPendingFunction.gotoPendingFunction();
+		}
+	});
+
+	context.subscriptions.push(gotoPendingFunctionDisposable);
 
 	const inspectDisposable = vscode.commands.registerCommand('pend.inspect', async (args: any) => {
 		let editor = vscode.window.activeTextEditor;
