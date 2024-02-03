@@ -11,13 +11,16 @@
 			"request": "launch",
 			"sourceMaps": true,
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--verbose"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "${defaultBuildTask}",
+			"env": {
+                "DEBUG": "true"
+            }
 		}
 	]
 }

@@ -63,7 +63,7 @@ export class PendSidebarProvider implements WebviewViewProvider {
                 <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
             </body>
         </html>
-          `;
+        `;
     }
 
     private _setWebviewMessageListener(webviewView: WebviewView) {

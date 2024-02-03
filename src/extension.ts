@@ -11,10 +11,16 @@ import * as config from './config';
 import { FunctionCallSelector } from './function-call-selector';
 import { DocumentSymbols } from './document-symbols';
 import { PendSidebarProvider } from './providers/sidebar-provider';
+import { NewFunctionCommand } from './commands/new-function-command';
 
 const log: Logger = new Logger('Pend', true);
 
-
+interface IMementoExplorerExtension {
+	readonly memento: {
+		readonly globalState?: vscode.Memento;
+		readonly workspaceState?: vscode.Memento;
+	};
+}
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -22,13 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
 	log.append('extension "pend" is now active!');
 
 	const newFunctionDisposable = vscode.commands.registerCommand('pend.newFunction', async (args: any) => {
-		let editor = vscode.window.activeTextEditor;
+		const editor = vscode.window.activeTextEditor;
+
 		if (editor) {
-			let location = config.getNewFunctionDefaultLocation(editor.document);
-			if (args) {
-				location = SymbolLocation.parse(args);
-			}
-			await pend.insertNewFunction(editor, location, args);
+			const location = config.getNewFunctionDefaultLocation(editor.document);
+			const newFunction = new NewFunctionCommand(context, editor, args);
+			await newFunction.insertNewFunctionAt(location);
 		}
 	});
 
@@ -43,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		log.append("New Ok...");
 		if (editor) {
-			if(debugSelection) {
+			if (debugSelection) {
 				let selector = new FunctionCallSelector(editor);
 				log.append(`wordSeparators: ${selector.wordSeparators}`);
 				log.append("---------------------------------------------");
@@ -54,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
 				await selector.selectWord(true);
 			}
 
-			if (logSymbols){
+			if (logSymbols) {
 				const documentSymbols = new DocumentSymbols(editor.document);
 				log.logSymbols(await documentSymbols.getSymbols());
 			}
@@ -68,8 +73,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(inspectDisposable);
 
-	const sidebarProvider = new PendSidebarProvider(context.extensionUri)
+
+	const sidebarProvider = new PendSidebarProvider(context.extensionUri);
 	const sidebarDisposable = vscode.window.registerWebviewViewProvider(PendSidebarProvider.viewType, sidebarProvider);
+
+	if (context.extensionMode === vscode.ExtensionMode.Development) {
+		return {
+			memento: {
+				globalState: context.globalState,
+				workspaceState: context.workspaceState,
+			},
+		};
+	}
 }
 
 
