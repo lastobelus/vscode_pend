@@ -17,6 +17,10 @@
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
 	},
 	"exclude": [
+		"node_modules", 
+		".vscode-test", 
+		"webview-ui",
 		"src/test/sampleTypescriptWorkspace/*.ts"
 	]
+
 }
