@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
+	import {
+		provideVSCodeDesignSystem,
+		vsCodeButton,
+	} from "@vscode/webview-ui-toolkit";
 	import { vscode } from "./utilities/vscode";
 
 	// In order to use the Webview UI Toolkit web components they
@@ -20,18 +23,49 @@
 	// components at once, there's a handy convenience function:
 	//
 	// provideVSCodeDesignSystem().register(allComponents);
+	
+	let person: string = "world";
+	let dbg:string ="...";
 
+	
 	function handleHowdyClick() {
 		vscode.postMessage({
 			command: "hello",
-			text: "Hey there partner! 🤠",
+			text: "Hello there!",
 		});
 	}
+
+	function handleEnter(e: KeyboardEvent) {
+		if (e.key === "Enter") {
+			handleHowdyClick();
+		}
+	}
+
+	function handleMessage(event: any) {
+		const message = event.data;
+		dbg = "got message";
+		console.log("got message", message);
+		switch (message.cmd) {
+			case "newFunction":
+				person = message.name;
+				break;
+		}
+	};
+
 </script>
 
+<svelte:window on:message={handleMessage} />
+
 <main>
-	<h1>Hello world!</h1>
-	<vscode-button on:click={handleHowdyClick}>Howdy!</vscode-button>
+	<h1>Oy, Hello {person}!</h1>
+	<vscode-button
+	on:click={handleHowdyClick}
+	on:keyup={handleEnter}
+	tabindex="0"
+	role="button">
+		Howdy!
+	</vscode-button>
+	<p>{dbg}</p>
 </main>
 
 <style>

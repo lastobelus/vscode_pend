@@ -33,7 +33,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if (editor) {
 			const location = config.getNewFunctionDefaultLocation(editor.document);
 			const newFunction = new NewFunctionCommand(context, editor, args);
-			await newFunction.insertNewFunctionAt(location);
+			let result = await newFunction.insertNewFunctionAt(location);
+			if (result) {
+				PendPanel.postMessage({ cmd: 'newFunction', ...result });
+			}
 		}
 	});
 

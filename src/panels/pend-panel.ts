@@ -1,6 +1,15 @@
 import { Disposable, Webview, WebviewPanel, window, Uri, ViewColumn } from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
+import * as util from 'util';
+import { Logger } from '../logger';
+
+const log: Logger = new Logger('Pend', true);
+
+interface PendPanelMessage {
+  cmd: string;
+  [key: string]: any;
+}
 
 /**
  * This class manages the state and behavior of Pend webview panels.
@@ -70,6 +79,21 @@ export class PendPanel {
   }
 
   /**
+ * Posts a message to the Panel webview. Each `cmd` must have a corresponding handler
+ * in the webview 'message' event listener.
+ *
+ * @param message The message to post to the webview. It must be a json serializable
+ * object containing a `cmd` key which contains the name of the command to execute.
+ */
+  public static postMessage(message: PendPanelMessage) {
+    if (PendPanel.currentPanel) {
+      log.append(`sending message to PendPanel: ${util.inspect(message)}`);
+      PendPanel.currentPanel._panel.webview.postMessage(message);
+    }
+  }
+
+
+  /**
    * Cleans up and disposes of webview resources when the webview panel is closed.
    */
   public dispose() {
@@ -103,7 +127,7 @@ export class PendPanel {
     const stylesUri = getUri(webview, extensionUri, ["webview-ui", "public", "build", "bundle.css"]);
     // The JS file from the Svelte build output
     const scriptUri = getUri(webview, extensionUri, ["webview-ui", "public", "build", "bundle.js"]);
-    
+
     const nonce = getNonce();
 
     // Tip: Install the es6-string-html VS Code extension to enable code highlighting below

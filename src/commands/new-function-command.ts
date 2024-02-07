@@ -71,6 +71,8 @@ export class NewFunctionCommand {
                 context.range
                 );
         }
+
+        return {name: name};
     }
 
     private async containerSymbol(): Promise<SymbolInsertionRange | undefined> {
