@@ -125,6 +125,8 @@ export class PendPanel {
   private _getWebviewContent(webview: Webview, extensionUri: Uri) {
     // The CSS file from the Svelte build output
     const stylesUri = getUri(webview, extensionUri, ["webview-ui", "public", "build", "bundle.css"]);
+    // The codicons css file from the Svelte build output
+    const codiconsUri = getUri(webview, extensionUri, ["webview-ui", "public", "build", "codicon.css"]);
     // The JS file from the Svelte build output
     const scriptUri = getUri(webview, extensionUri, ["webview-ui", "public", "build", "bundle.js"]);
 
@@ -138,8 +140,12 @@ export class PendPanel {
           <title>Hello World</title>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+          
+          // webview.cspSource is leveraged as a nonce to whitelist which asset files can be loaded.
+          // We need the 'font-src' directive to allow the webview to load the codicons font file.
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
+          <link rel="stylesheet" type="text/css" href="${codiconsUri}">
           <script defer nonce="${nonce}" src="${scriptUri}"></script>
         </head>
         <body>

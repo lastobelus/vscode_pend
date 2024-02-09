@@ -66,6 +66,8 @@
 		Howdy!
 	</vscode-button>
 	<p>{dbg}</p>
+	I am an icon: <vscode-icon name="check" />
+	I am a different icon: <div class='codicon codicon-add'></div>
 </main>
 
 <style>
