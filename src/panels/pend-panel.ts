@@ -3,6 +3,7 @@ import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 import * as util from 'util';
 import { Logger } from '../logger';
+import { PendingFunctionData, PendingFunctionBookmark, BookmarkId } from '../storage/pending-function-data';
 
 const log: Logger = new Logger('Pend', true);
 
@@ -25,6 +26,7 @@ export class PendPanel {
   public static currentPanel: PendPanel | undefined;
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
+  private _storage: PendingFunctionData;
 
   /**
    * The PendPanel class private constructor (called only from the render method).
@@ -32,8 +34,13 @@ export class PendPanel {
    * @param panel A reference to the webview panel
    * @param extensionUri The URI of the directory containing the extension
    */
-  private constructor(panel: WebviewPanel, extensionUri: Uri) {
+  private constructor(
+    panel: WebviewPanel,
+    extensionUri: Uri,
+    storage: PendingFunctionData
+  ) {
     this._panel = panel;
+    this._storage = storage;
 
     // Set an event listener to listen for when the panel is disposed (i.e. when the user closes
     // the panel or when the panel is closed programmatically)
@@ -52,7 +59,7 @@ export class PendPanel {
    *
    * @param extensionUri The URI of the directory containing the extension.
    */
-  public static render(extensionUri: Uri) {
+  public static render(extensionUri: Uri, storage: PendingFunctionData) {
     if (PendPanel.currentPanel) {
       // If the webview panel already exists reveal it
       PendPanel.currentPanel._panel.reveal(ViewColumn.One);
@@ -74,7 +81,7 @@ export class PendPanel {
         }
       );
 
-      PendPanel.currentPanel = new PendPanel(panel, extensionUri);
+      PendPanel.currentPanel = new PendPanel(panel, extensionUri, storage);
     }
   }
 
@@ -111,6 +118,28 @@ export class PendPanel {
     }
   }
 
+  public async deleteAllBookmarks() {
+    const answer = await window.showInformationMessage(
+      "Delete all bookmarks to pending functions?", "Yes", "No"
+    );
+
+    if (answer === "Yes") {
+      window.showInformationMessage("Deleting all bookmarks...");
+      await this._storage.clearPendingFunctions();
+    }
+  }
+  
+  public async deleteBookmark(id: BookmarkId, name: string) {
+    const answer = await window.showInformationMessage(
+      `Delete bookmark for ${name}?`, "Yes", "No"
+    );
+
+    if (answer === "Yes") {
+      window.showInformationMessage("Deleting bookmark...");
+      await this._storage.removePendingFunctionWithId(id);
+    }
+  }
+
   /**
    * Defines and returns the HTML that should be rendered within the webview panel.
    *
@@ -141,8 +170,10 @@ export class PendPanel {
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           
-          // webview.cspSource is leveraged as a nonce to whitelist which asset files can be loaded.
-          // We need the 'font-src' directive to allow the webview to load the codicons font file.
+          <!-- 
+          webview.cspSource is leveraged as a nonce to whitelist which asset files can be loaded.
+          We need the 'font-src' directive to allow the webview to load the codicons font file.
+          -->
           <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
           <link rel="stylesheet" type="text/css" href="${codiconsUri}">
@@ -172,8 +203,13 @@ export class PendPanel {
             // Code that should run in response to the hello message command
             window.showInformationMessage(text);
             return;
-          // Add more switch case statements here as more webview message commands
-          // are created within the webview context (i.e. inside media/main.js)
+
+          case "pending-functions-bookmarks-delete-all":
+            log.append("pending-functions-bookmarks-delete-all");
+            if (PendPanel.currentPanel) {
+              PendPanel.currentPanel.deleteAllBookmarks();
+            }
+            return;
         }
       },
       undefined,

@@ -27,12 +27,17 @@ export class NewFunctionCommand {
     storage: PendingFunctionData;
     symbols: DocumentSymbols;
 
-    constructor(context: vscode.ExtensionContext, editor: vscode.TextEditor, args: any = undefined) {
+    constructor(
+        context: vscode.ExtensionContext,
+        editor: vscode.TextEditor,
+        storage: PendingFunctionData,
+        args: any = undefined
+        ) {
         this.editor = editor;
         this.document = editor.document;
         this.context = context;
         this.args = args;
-        this.storage = new PendingFunctionData(context);
+        this.storage = storage;
         this.symbols = new DocumentSymbols(this.document);
     }
 

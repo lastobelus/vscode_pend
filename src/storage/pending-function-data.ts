@@ -36,7 +36,7 @@ export class PendingFunctionBookmark {
 
 type BookmarksEvent = {
     added?: BookmarkId;
-    removed?: BookmarkId;
+    removed?: BookmarkId | BookmarkId[];
 };
 
 export const bookmarksDidChange = new vscode.EventEmitter<BookmarksEvent>();
@@ -47,33 +47,43 @@ export class PendingFunctionData {
         this.storage = context.workspaceState;
     }
 
-    async getPendingFunctions(): Promise<PendingFunctionBookmark[]> {
+    public async getPendingFunctions(): Promise<PendingFunctionBookmark[]> {
         const pendingFunctions = this.storage.get<PendingFunctionList>(`pendingFunctions`, { bookmarks: [] });
         return pendingFunctions.bookmarks;
     }
 
-    async updatePendingFunctions(pendingFunctions: PendingFunctionBookmark[]) {
+    public async updatePendingFunctions(pendingFunctions: PendingFunctionBookmark[]) {
         const pendingFunctionsList: PendingFunctionList = { bookmarks: pendingFunctions };
         await this.storage.update(`pendingFunctions`, pendingFunctionsList);
     }
 
     // #TODO: only add if not already present?
-    async addPendingFunction(pendingFunction: PendingFunctionBookmark) {
+    public async addPendingFunction(pendingFunction: PendingFunctionBookmark) {
         const pendingFunctions = await this.getPendingFunctions();
         pendingFunction.id = PendingFunctionData.idForBookmark(pendingFunction);
         pendingFunctions.push(pendingFunction);
         await this.updatePendingFunctions(pendingFunctions);
-        bookmarksDidChange.fire({added: pendingFunction.id});
+        bookmarksDidChange.fire({ added: pendingFunction.id });
     }
 
-    async removePendingFunction(pendingFunction: PendingFunctionBookmark) {
+    public async removePendingFunctionWithId(id: BookmarkId) {
         const pendingFunctions = await this.getPendingFunctions();
         await this.updatePendingFunctions(
             pendingFunctions.filter(
-                (bookmark) => bookmark.id !== pendingFunction.id
+                (bookmark) => bookmark.id !== id
             )
         );
-        bookmarksDidChange.fire({removed: pendingFunction.id});
+        bookmarksDidChange.fire({ removed: id });
+    }
+
+    public async clearPendingFunctions() {
+        const ids = await this.getPendingFunctions().then(
+            bookmarks => {
+                bookmarks.map((bookmark) => bookmark.id);
+            }
+        );
+        await this.updatePendingFunctions([]);
+        bookmarksDidChange.fire({ removed: -1 });
     }
 
     static idForBookmark(bookmark: PendingFunctionBookmark): BookmarkId {

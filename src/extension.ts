@@ -13,6 +13,7 @@ import { PendSidebarProvider } from './providers/sidebar-provider';
 import { NewFunctionCommand } from './commands/new-function-command';
 import { PendPanel } from "./panels/pend-panel";
 import { GotoPendingFunctionCommand } from './commands/goto-pending-function-command';
+import { PendingFunctionData } from './storage/pending-function-data';
 
 const log: Logger = new Logger('Pend', true);
 
@@ -28,12 +29,19 @@ interface IMementoExplorerExtension {
 export function activate(context: vscode.ExtensionContext) {
 	log.append('extension "pend" is now active!');
 
+	const pendingFunctionData = new PendingFunctionData(context);
+
 	const newFunctionDisposable = vscode.commands.registerCommand('pend.newFunction', async (args: any) => {
 		const editor = vscode.window.activeTextEditor;
 
 		if (editor) {
 			const location = config.getNewFunctionDefaultLocation(editor.document);
-			const newFunction = new NewFunctionCommand(context, editor, args);
+			const newFunction = new NewFunctionCommand(
+				context,
+				editor,
+				pendingFunctionData,
+				args
+			);
 			let result = await newFunction.insertNewFunctionAt(location);
 			if (result) {
 				PendPanel.postMessage({ cmd: 'newFunction', ...result });
@@ -47,7 +55,10 @@ export function activate(context: vscode.ExtensionContext) {
 		const editor = vscode.window.activeTextEditor;
 
 		if (editor) {
-			const gotoPendingFunction = new GotoPendingFunctionCommand(context);
+			const gotoPendingFunction = new GotoPendingFunctionCommand(
+				context,
+				pendingFunctionData
+			);
 			await gotoPendingFunction.gotoPendingFunction();
 		}
 	});
@@ -89,7 +100,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(inspectDisposable);
 
 	const showPendPanelCommand = vscode.commands.registerCommand("pend.showPendPanel", () => {
-		PendPanel.render(context.extensionUri);
+		PendPanel.render(context.extensionUri, pendingFunctionData);
 	});
 	context.subscriptions.push(showPendPanelCommand);
 

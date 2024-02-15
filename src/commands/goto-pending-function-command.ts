@@ -17,9 +17,12 @@ export class GotoPendingFunctionCommand {
     context: vscode.ExtensionContext;
     storage: PendingFunctionData; 
 
-    constructor(context: vscode.ExtensionContext) {
+    constructor(
+        context: vscode.ExtensionContext,
+        storage: PendingFunctionData,
+        ) {
         this.context = context;
-        this.storage = new PendingFunctionData(context);
+        this.storage = storage;
     }
 
     async pickPendingFunction() {
